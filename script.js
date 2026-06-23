@@ -11,8 +11,9 @@ const ROLES = {
 
 // ===== INITIALIZATION =====
 function initApp() {
-    // Create default admin if no users exist
+    // Create default users if no users exist
     if (users.length === 0) {
+        // Create Admin Account
         users.push({
             id: 'admin-001',
             name: 'BUK Administrator',
@@ -27,6 +28,23 @@ function initApp() {
                 phone: '+256-XXX-XXX-XXX'
             }
         });
+        
+        // Create Default Student Account (View-Only)
+        users.push({
+            id: 'student-001',
+            name: 'John Student',
+            email: 'student@bugema.ac.ug',
+            studentId: 'BUK-2024-001',
+            password: 'student123',
+            role: ROLES.STUDENT,
+            joined: new Date().toISOString(),
+            profile: {
+                avatar: '👤',
+                department: 'Computer Science',
+                phone: '+256-XXX-XXX-XXX'
+            }
+        });
+        
         localStorage.setItem('bukUsers', JSON.stringify(users));
     }
 
@@ -55,6 +73,7 @@ function showApp() {
     displayNotices();
     updateStats();
     checkUserPermissions();
+    updateUIForRole();
 }
 
 function switchAuth(form) {
@@ -81,7 +100,7 @@ function loginUser(event) {
         // Role-specific welcome message
         const welcomeMsg = user.role === ROLES.ADMIN 
             ? `Welcome back, Admin ${user.name}! 👑` 
-            : `Welcome back to BUK, ${user.name}! 👋`;
+            : `Welcome to BUK, ${user.name}! 👋 You have view-only access.`;
         alert(welcomeMsg);
     } else {
         alert('❌ Invalid email or password. Please try again.');
@@ -112,7 +131,7 @@ function registerUser(event) {
         return;
     }
 
-    // Create new user (default role: student)
+    // Create new user (default role: student - VIEW ONLY)
     const newUser = {
         id: 'buk-user-' + Date.now(),
         name: name,
@@ -135,7 +154,7 @@ function registerUser(event) {
     currentUser = newUser;
     sessionStorage.setItem('bukCurrentUser', JSON.stringify(newUser));
     showApp();
-    alert('✅ Account created successfully! Welcome to BUK!');
+    alert('✅ Account created successfully! Welcome to BUK! You have view-only access.');
 }
 
 function logoutUser() {
@@ -167,8 +186,55 @@ function checkUserPermissions() {
     // Update role badge
     const roleBadge = document.getElementById('userRoleDisplay');
     if (roleBadge) {
-        roleBadge.textContent = isAdmin ? '👑 ADMIN' : '🎓 STUDENT';
+        roleBadge.textContent = isAdmin ? '👑 ADMIN' : '👁️ VIEWER';
         roleBadge.style.color = isAdmin ? '#c9a84c' : '#003366';
+    }
+}
+
+// ===== UPDATE UI FOR ROLE =====
+function updateUIForRole() {
+    if (!currentUser) return;
+    
+    const isAdmin = currentUser.role === ROLES.ADMIN;
+    const isStudent = currentUser.role === ROLES.STUDENT;
+    
+    // Hide Notice Form for Students (View-Only)
+    const noticeForm = document.getElementById('notice-form');
+    if (noticeForm) {
+        if (isStudent) {
+            noticeForm.style.display = 'none';
+            // Show a message to students
+            const viewOnlyMessage = document.createElement('div');
+            viewOnlyMessage.id = 'viewOnlyMessage';
+            viewOnlyMessage.className = 'view-only-banner';
+            viewOnlyMessage.innerHTML = `
+                <div class="view-only-container">
+                    <span class="view-only-icon">👁️</span>
+                    <div>
+                        <h3>View-Only Mode</h3>
+                        <p>You are in view-only mode. Only administrators can post, edit, or delete notices.</p>
+                    </div>
+                </div>
+            `;
+            // Insert after stats bar
+            const statsBar = document.querySelector('.stats-bar');
+            if (statsBar && !document.getElementById('viewOnlyMessage')) {
+                statsBar.parentNode.insertBefore(viewOnlyMessage, statsBar.nextSibling);
+            }
+        } else {
+            noticeForm.style.display = 'block';
+            // Remove view-only message if exists
+            const viewOnlyMsg = document.getElementById('viewOnlyMessage');
+            if (viewOnlyMsg) {
+                viewOnlyMsg.remove();
+            }
+        }
+    }
+    
+    // Hide Post/Edit/Delete buttons for students
+    if (isStudent) {
+        // Remove any existing post form
+        document.querySelectorAll('.student-post-controls').forEach(el => el.remove());
     }
 }
 
@@ -220,14 +286,15 @@ function viewProfile() {
             <div class="role-badge admin-badge">👑 Administrator</div>
             <p><strong>Department:</strong> ${currentUser.profile?.department || 'Administration'}</p>
             <p><strong>Access Level:</strong> Full System Access</p>
-            <p><strong>Permissions:</strong> Manage Users, Delete All Notices, System Settings</p>
+            <p><strong>Permissions:</strong> Post, Edit, Delete Notices | Manage Users | System Settings</p>
         `;
     } else {
         roleSpecificInfo.innerHTML = `
-            <div class="role-badge student-badge">🎓 Student</div>
+            <div class="role-badge student-badge">👁️ View-Only</div>
             <p><strong>Department:</strong> ${currentUser.profile?.department || 'Not Set'}</p>
-            <p><strong>Access Level:</strong> Standard User</p>
-            <p><strong>Permissions:</strong> View Notices, Post Notices, Delete Own Notices</p>
+            <p><strong>Access Level:</strong> View-Only Access</p>
+            <p><strong>Permissions:</strong> View Notices Only</p>
+            <p style="color:#666;font-style:italic;margin-top:10px;">⚠️ Students cannot post, edit, or delete notices.</p>
         `;
     }
     
@@ -244,7 +311,7 @@ function updateProfileInfo() {
     if (currentUser.role === ROLES.ADMIN) {
         avatar.textContent = '👑';
     } else {
-        avatar.textContent = currentUser.name.charAt(0).toUpperCase();
+        avatar.textContent = '👁️';
     }
 }
 
@@ -277,7 +344,7 @@ function updateAdminPanel() {
     userList.innerHTML = users.map(user => `
         <div class="admin-user-item ${user.role === ROLES.ADMIN ? 'admin-user' : 'student-user'}">
             <div class="user-info">
-                <strong>${user.role === ROLES.ADMIN ? '👑' : '👤'} ${user.name}</strong>
+                <strong>${user.role === ROLES.ADMIN ? '👑' : '👁️'} ${user.name}</strong>
                 <div style="font-size:0.9rem;color:#666;">
                     📧 ${user.email} | 🎓 ${user.studentId} 
                     <span class="role-tag ${user.role}">${user.role.toUpperCase()}</span>
@@ -376,7 +443,7 @@ function displayNotices(noticesToShow = null) {
             <div class="empty-state">
                 <span class="empty-icon">📋</span>
                 <h3>No Notices Found</h3>
-                <p>${notices.length === 0 ? 'Be the first to post a BUK notice!' : 'Try adjusting your search or filter.'}</p>
+                <p>${notices.length === 0 ? 'No notices have been posted yet.' : 'Try adjusting your search or filter.'}</p>
             </div>
         `;
         return;
@@ -392,9 +459,12 @@ function displayNotices(noticesToShow = null) {
                             notice.author === 'Admin' ||
                             (notice.author && notice.author.includes('Admin'));
         
-        const isOwnNotice = currentUser && currentUser.id === notice.userId;
-        const canDelete = currentUser && (currentUser.role === ROLES.ADMIN || isOwnNotice);
-        const canEdit = currentUser && isOwnNotice;
+        const isAdmin = currentUser && currentUser.role === ROLES.ADMIN;
+        const isStudent = currentUser && currentUser.role === ROLES.STUDENT;
+        
+        // Only admins can delete notices
+        const canDelete = isAdmin;
+        const canEdit = isAdmin;
         
         return `
         <div class="notice-card ${isAdminNotice ? 'admin-notice' : 'student-notice'}">
@@ -422,7 +492,13 @@ function displayNotices(noticesToShow = null) {
                     <button class="edit-btn" onclick="editNotice(${notices.indexOf(notice)})">✏️ Edit</button>
                 ` : ''}
                 <button class="view-btn" onclick="viewNoticeDetails(${notices.indexOf(notice)})">👁️ View Details</button>
+                ${isStudent ? '<span class="view-only-tag">🔒 View Only</span>' : ''}
             </div>
+            ${isStudent ? `
+                <div class="view-only-notice">
+                    <span>🔒</span> Students can view but not interact with notices.
+                </div>
+            ` : ''}
         </div>
     `}).join('');
 }
@@ -433,13 +509,14 @@ function deleteNotice(index) {
         return;
     }
     
-    const notice = notices[index];
-    if (currentUser.role !== ROLES.ADMIN && currentUser.id !== notice.userId) {
-        alert('❌ You can only delete your own notices.');
+    // Only admins can delete
+    if (currentUser.role !== ROLES.ADMIN) {
+        alert('❌ Only administrators can delete notices.');
         return;
     }
     
-    if (confirm('Are you sure you want to delete this notice?')) {
+    const notice = notices[index];
+    if (confirm(`Are you sure you want to delete "${notice.title}"?`)) {
         notices.splice(index, 1);
         localStorage.setItem('bukNotices', JSON.stringify(notices));
         displayNotices();
@@ -447,6 +524,7 @@ function deleteNotice(index) {
         if (document.getElementById('adminPanel').style.display === 'block') {
             updateAdminPanel();
         }
+        alert('✅ Notice deleted successfully!');
     }
 }
 
@@ -473,13 +551,15 @@ function clearAllNotices() {
     }
 }
 
-// ===== EDIT NOTICE (Student's Own Notices) =====
+// ===== EDIT NOTICE (Admin Only) =====
 function editNotice(index) {
-    const notice = notices[index];
-    if (!currentUser || currentUser.id !== notice.userId) {
-        alert('❌ You can only edit your own notices.');
+    if (!currentUser || currentUser.role !== ROLES.ADMIN) {
+        alert('❌ Only administrators can edit notices.');
         return;
     }
+    
+    const notice = notices[index];
+    if (!notice) return;
     
     const newTitle = prompt('Edit Title:', notice.title);
     if (newTitle === null) return;
@@ -512,7 +592,7 @@ function viewNoticeDetails(index) {
 📅 Date: ${formatDate(notice.date)}
 🕐 Time: ${notice.time || 'Just now'}
 👤 Author: ${notice.author || 'Unknown'}
-👑 Role: ${isAdminNotice ? '👑 Administrator' : '🎓 Student'}
+👑 Role: ${isAdminNotice ? '👑 Administrator' : '👤 Student'}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📝 Message:
@@ -560,12 +640,18 @@ function updateStats() {
     document.getElementById('userCount').textContent = users.length;
 }
 
-// ===== POST NOTICE =====
+// ===== POST NOTICE (Admin Only) =====
 document.getElementById('noticeForm')?.addEventListener('submit', function(e) {
     e.preventDefault();
     
     if (!currentUser) {
-        alert('Please login to post a BUK notice.');
+        alert('Please login to post a notice.');
+        return;
+    }
+    
+    // Only admins can post
+    if (currentUser.role !== ROLES.ADMIN) {
+        alert('❌ Only administrators can post notices. Students have view-only access.');
         return;
     }
 
@@ -588,7 +674,7 @@ document.getElementById('noticeForm')?.addEventListener('submit', function(e) {
         time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         author: currentUser.name,
         userId: currentUser.id,
-        role: currentUser.role, // Store the user's role with the notice
+        role: currentUser.role,
         timestamp: new Date().toISOString()
     };
 
@@ -601,7 +687,7 @@ document.getElementById('noticeForm')?.addEventListener('submit', function(e) {
     
     displayNotices();
     updateStats();
-    alert('✅ BUK notice posted successfully!');
+    alert('✅ Notice posted successfully!');
 });
 
 // ===== SEARCH & FILTER =====
