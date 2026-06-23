@@ -923,4 +923,54 @@ footer {
     }
     
     .modal-content {
-        padding:
+        padding: 25px;
+    }
+    
+    .admin-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .bugema-logo {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .logo-shield {
+        min-width: 70px;
+    }
+    
+    .logo-text .blu {
+        font-size: 18px;
+    }
+    
+    .header-title h1 {
+        font-size: 1.4rem;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .stats-bar {
+        grid-template-columns: 1fr;
+    }
+    
+    #notice-form {
+        padding: 20px 15px;
+    }
+    
+    .user-profile {
+        padding: 5px 8px;
+    }
+    
+    .user-name {
+        font-size: 0.75rem;
+    }
+    
+    .header-right {
+        justify-content: center;
+    }
+}
