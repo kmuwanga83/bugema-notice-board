@@ -1,7 +1,7 @@
 // ===== DATA STORE =====
-let users = JSON.parse(localStorage.getItem('bugemaUsers')) || [];
-let notices = JSON.parse(localStorage.getItem('bugemaNotices')) || [];
-let currentUser = JSON.parse(sessionStorage.getItem('bugemaCurrentUser')) || null;
+let users = JSON.parse(localStorage.getItem('bukUsers')) || [];
+let notices = JSON.parse(localStorage.getItem('bukNotices')) || [];
+let currentUser = JSON.parse(sessionStorage.getItem('bukCurrentUser')) || null;
 
 // ===== INITIALIZATION =====
 function initApp() {
@@ -9,14 +9,14 @@ function initApp() {
     if (users.length === 0) {
         users.push({
             id: 'admin-001',
-            name: 'Administrator',
+            name: 'BUK Administrator',
             email: 'admin@bugema.ac.ug',
-            studentId: 'ADMIN-001',
+            studentId: 'BUK-ADMIN-001',
             password: 'admin123',
             role: 'admin',
             joined: new Date().toISOString()
         });
-        localStorage.setItem('bugemaUsers', JSON.stringify(users));
+        localStorage.setItem('bukUsers', JSON.stringify(users));
     }
 
     // Check if user is logged in
@@ -63,9 +63,9 @@ function loginUser(event) {
     
     if (user) {
         currentUser = user;
-        sessionStorage.setItem('bugemaCurrentUser', JSON.stringify(user));
+        sessionStorage.setItem('bukCurrentUser', JSON.stringify(user));
         showApp();
-        alert(`Welcome back, ${user.name}! 👋`);
+        alert(`Welcome back to BUK, ${user.name}! 👋`);
     } else {
         alert('❌ Invalid email or password. Please try again.');
     }
@@ -97,7 +97,7 @@ function registerUser(event) {
 
     // Create new user (default role: student)
     const newUser = {
-        id: 'user-' + Date.now(),
+        id: 'buk-user-' + Date.now(),
         name: name,
         email: email,
         studentId: studentId,
@@ -107,19 +107,19 @@ function registerUser(event) {
     };
 
     users.push(newUser);
-    localStorage.setItem('bugemaUsers', JSON.stringify(users));
+    localStorage.setItem('bukUsers', JSON.stringify(users));
 
     // Auto-login
     currentUser = newUser;
-    sessionStorage.setItem('bugemaCurrentUser', JSON.stringify(newUser));
+    sessionStorage.setItem('bukCurrentUser', JSON.stringify(newUser));
     showApp();
-    alert('✅ Account created successfully! Welcome to Bugema!');
+    alert('✅ Account created successfully! Welcome to BUK!');
 }
 
 function logoutUser() {
     if (confirm('Are you sure you want to logout?')) {
         currentUser = null;
-        sessionStorage.removeItem('bugemaCurrentUser');
+        sessionStorage.removeItem('bukCurrentUser');
         showAuthModal();
         document.getElementById('userMenu').classList.remove('show');
     }
@@ -200,14 +200,14 @@ function updateAdminPanel() {
             <div class="user-info">
                 <strong>${user.name}</strong>
                 <div style="font-size:0.9rem;color:#666;">
-                    ${user.email} | ${user.studentId} | Role: ${user.role}
+                    📧 ${user.email} | 🎓 ${user.studentId} | Role: ${user.role}
                 </div>
             </div>
             <div class="user-actions">
                 ${user.role !== 'admin' ? `
                     <button class="btn-sm btn-edit" onclick="makeAdmin('${user.id}')">Make Admin</button>
                     <button class="btn-sm btn-delete" onclick="deleteUser('${user.id}')">Delete</button>
-                ` : '<span style="color:var(--bugema-gold);font-weight:600;">👑 Admin</span>'}
+                ` : '<span style="color:var(--buk-gold);font-weight:700;">👑 Admin</span>'}
             </div>
         </div>
     `).join('');
@@ -239,9 +239,9 @@ function makeAdmin(userId) {
     const user = users.find(u => u.id === userId);
     if (user) {
         user.role = 'admin';
-        localStorage.setItem('bugemaUsers', JSON.stringify(users));
+        localStorage.setItem('bukUsers', JSON.stringify(users));
         updateAdminPanel();
-        alert(`✅ ${user.name} is now an admin!`);
+        alert(`✅ ${user.name} is now a BUK Admin!`);
     }
 }
 
@@ -254,7 +254,7 @@ function deleteUser(userId) {
     const user = users.find(u => u.id === userId);
     if (user && confirm(`Are you sure you want to delete ${user.name}?`)) {
         users = users.filter(u => u.id !== userId);
-        localStorage.setItem('bugemaUsers', JSON.stringify(users));
+        localStorage.setItem('bukUsers', JSON.stringify(users));
         updateAdminPanel();
         alert('✅ User deleted successfully!');
     }
@@ -288,7 +288,7 @@ function displayNotices(noticesToShow = null) {
             <div class="empty-state">
                 <span class="empty-icon">📋</span>
                 <h3>No Notices Found</h3>
-                <p>${notices.length === 0 ? 'Be the first to post a notice!' : 'Try adjusting your search or filter.'}</p>
+                <p>${notices.length === 0 ? 'Be the first to post a BUK notice!' : 'Try adjusting your search or filter.'}</p>
             </div>
         `;
         return;
@@ -330,7 +330,7 @@ function deleteNotice(index) {
     
     if (confirm('Are you sure you want to delete this notice?')) {
         notices.splice(index, 1);
-        localStorage.setItem('bugemaNotices', JSON.stringify(notices));
+        localStorage.setItem('bukNotices', JSON.stringify(notices));
         displayNotices();
         updateStats();
         if (document.getElementById('adminPanel').style.display === 'block') {
@@ -341,7 +341,7 @@ function deleteNotice(index) {
 
 function clearAllNotices() {
     if (!currentUser || currentUser.role !== 'admin') {
-        alert('❌ Only admins can clear all notices.');
+        alert('❌ Only BUK Admins can clear all notices.');
         return;
     }
     
@@ -350,15 +350,15 @@ function clearAllNotices() {
         return;
     }
     
-    if (confirm('⚠️ Delete ALL notices? This cannot be undone!')) {
+    if (confirm('⚠️ Delete ALL BUK notices? This cannot be undone!')) {
         notices = [];
-        localStorage.setItem('bugemaNotices', JSON.stringify(notices));
+        localStorage.setItem('bukNotices', JSON.stringify(notices));
         displayNotices();
         updateStats();
         if (document.getElementById('adminPanel').style.display === 'block') {
             updateAdminPanel();
         }
-        alert('All notices cleared successfully!');
+        alert('All BUK notices cleared successfully!');
     }
 }
 
@@ -405,7 +405,7 @@ document.getElementById('noticeForm')?.addEventListener('submit', function(e) {
     e.preventDefault();
     
     if (!currentUser) {
-        alert('Please login to post a notice.');
+        alert('Please login to post a BUK notice.');
         return;
     }
 
@@ -420,7 +420,7 @@ document.getElementById('noticeForm')?.addEventListener('submit', function(e) {
     }
 
     const newNotice = {
-        id: 'notice-' + Date.now(),
+        id: 'buk-notice-' + Date.now(),
         title: title,
         message: message,
         date: date,
@@ -432,7 +432,7 @@ document.getElementById('noticeForm')?.addEventListener('submit', function(e) {
     };
 
     notices.push(newNotice);
-    localStorage.setItem('bugemaNotices', JSON.stringify(notices));
+    localStorage.setItem('bukNotices', JSON.stringify(notices));
     
     // Reset form
     this.reset();
@@ -440,7 +440,7 @@ document.getElementById('noticeForm')?.addEventListener('submit', function(e) {
     
     displayNotices();
     updateStats();
-    alert('✅ Notice posted successfully!');
+    alert('✅ BUK notice posted successfully!');
 });
 
 // ===== SEARCH & FILTER =====
