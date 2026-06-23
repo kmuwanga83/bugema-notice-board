@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bugema University - Notice Board</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>📢 Bugema University Notice Board</h1>
+            <p class="subtitle">Stay informed with official announcements</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Notice Form -->
+        <section id="notice-form">
+            <h2>Post a New Notice</h2>
+            <form id="noticeForm">
+                <input type="text" id="title" placeholder="Notice Title" required />
+                <textarea id="message" placeholder="Notice Details" required rows="4"></textarea>
+                <input type="date" id="date" required />
+                <select id="category">
+                    <option value="Academic">Academic</option>
+                    <option value="Administrative">Administrative</option>
+                    <option value="Events">Events</option>
+                    <option value="Announcement">Announcement</option>
+                    <option value="Other">Other</option>
+                </select>
+                <button type="submit">Post Notice</button>
+            </form>
+        </section>
+
+        <!-- Notices Display -->
+        <section id="notices">
+            <h2>Latest Notices</h2>
+            <div id="noticeList"></div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Bugema University. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
