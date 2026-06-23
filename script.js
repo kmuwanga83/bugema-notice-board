@@ -3,6 +3,12 @@ let users = JSON.parse(localStorage.getItem('bukUsers')) || [];
 let notices = JSON.parse(localStorage.getItem('bukNotices')) || [];
 let currentUser = JSON.parse(sessionStorage.getItem('bukCurrentUser')) || null;
 
+// ===== USER ROLES =====
+const ROLES = {
+    ADMIN: 'admin',
+    STUDENT: 'student'
+};
+
 // ===== INITIALIZATION =====
 function initApp() {
     // Create default admin if no users exist
@@ -13,8 +19,13 @@ function initApp() {
             email: 'admin@bugema.ac.ug',
             studentId: 'BUK-ADMIN-001',
             password: 'admin123',
-            role: 'admin',
-            joined: new Date().toISOString()
+            role: ROLES.ADMIN,
+            joined: new Date().toISOString(),
+            profile: {
+                avatar: '👑',
+                department: 'Administration',
+                phone: '+256-XXX-XXX-XXX'
+            }
         });
         localStorage.setItem('bukUsers', JSON.stringify(users));
     }
@@ -43,6 +54,7 @@ function showApp() {
     updateUserUI();
     displayNotices();
     updateStats();
+    checkUserPermissions();
 }
 
 function switchAuth(form) {
@@ -65,7 +77,12 @@ function loginUser(event) {
         currentUser = user;
         sessionStorage.setItem('bukCurrentUser', JSON.stringify(user));
         showApp();
-        alert(`Welcome back to BUK, ${user.name}! 👋`);
+        
+        // Role-specific welcome message
+        const welcomeMsg = user.role === ROLES.ADMIN 
+            ? `Welcome back, Admin ${user.name}! 👑` 
+            : `Welcome back to BUK, ${user.name}! 👋`;
+        alert(welcomeMsg);
     } else {
         alert('❌ Invalid email or password. Please try again.');
     }
@@ -102,8 +119,13 @@ function registerUser(event) {
         email: email,
         studentId: studentId,
         password: password,
-        role: 'student',
-        joined: new Date().toISOString()
+        role: ROLES.STUDENT,
+        joined: new Date().toISOString(),
+        profile: {
+            avatar: '👤',
+            department: 'Not Set',
+            phone: 'Not Set'
+        }
     };
 
     users.push(newUser);
@@ -125,6 +147,31 @@ function logoutUser() {
     }
 }
 
+// ===== USER PERMISSIONS =====
+function checkUserPermissions() {
+    if (!currentUser) return;
+    
+    const isAdmin = currentUser.role === ROLES.ADMIN;
+    const isStudent = currentUser.role === ROLES.STUDENT;
+    
+    // Show/hide admin-only elements
+    document.querySelectorAll('.admin-only').forEach(el => {
+        el.style.display = isAdmin ? 'block' : 'none';
+    });
+    
+    // Show/hide student-only elements
+    document.querySelectorAll('.student-only').forEach(el => {
+        el.style.display = isStudent ? 'block' : 'none';
+    });
+    
+    // Update role badge
+    const roleBadge = document.getElementById('userRoleDisplay');
+    if (roleBadge) {
+        roleBadge.textContent = isAdmin ? '👑 ADMIN' : '🎓 STUDENT';
+        roleBadge.style.color = isAdmin ? '#c9a84c' : '#003366';
+    }
+}
+
 // ===== USER INTERFACE =====
 function updateUserUI() {
     if (currentUser) {
@@ -133,11 +180,14 @@ function updateUserUI() {
         document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
         
         // Show admin menu if user is admin
-        if (currentUser.role === 'admin') {
+        if (currentUser.role === ROLES.ADMIN) {
             document.getElementById('adminMenuItem').style.display = 'block';
         } else {
             document.getElementById('adminMenuItem').style.display = 'none';
         }
+        
+        // Update role-specific profile info
+        updateProfileInfo();
     }
 }
 
@@ -162,6 +212,25 @@ function viewProfile() {
     document.getElementById('profileStudentId').textContent = currentUser.studentId;
     document.getElementById('profileRole').textContent = currentUser.role.toUpperCase();
     document.getElementById('profileJoined').textContent = new Date(currentUser.joined).toLocaleDateString();
+    
+    // Show role-specific profile info
+    const roleSpecificInfo = document.getElementById('roleSpecificInfo');
+    if (currentUser.role === ROLES.ADMIN) {
+        roleSpecificInfo.innerHTML = `
+            <div class="role-badge admin-badge">👑 Administrator</div>
+            <p><strong>Department:</strong> ${currentUser.profile?.department || 'Administration'}</p>
+            <p><strong>Access Level:</strong> Full System Access</p>
+            <p><strong>Permissions:</strong> Manage Users, Delete All Notices, System Settings</p>
+        `;
+    } else {
+        roleSpecificInfo.innerHTML = `
+            <div class="role-badge student-badge">🎓 Student</div>
+            <p><strong>Department:</strong> ${currentUser.profile?.department || 'Not Set'}</p>
+            <p><strong>Access Level:</strong> Standard User</p>
+            <p><strong>Permissions:</strong> View Notices, Post Notices, Delete Own Notices</p>
+        `;
+    }
+    
     document.getElementById('userMenu').classList.remove('show');
 }
 
@@ -169,9 +238,19 @@ function closeProfile() {
     document.getElementById('profileModal').style.display = 'none';
 }
 
+function updateProfileInfo() {
+    // Update profile avatar based on role
+    const avatar = document.getElementById('userAvatar');
+    if (currentUser.role === ROLES.ADMIN) {
+        avatar.textContent = '👑';
+    } else {
+        avatar.textContent = currentUser.name.charAt(0).toUpperCase();
+    }
+}
+
 // ===== ADMIN PANEL =====
 function showAdminPanel() {
-    if (currentUser.role !== 'admin') {
+    if (currentUser.role !== ROLES.ADMIN) {
         alert('❌ Access denied. Admin privileges required.');
         return;
     }
@@ -193,52 +272,61 @@ function updateAdminPanel() {
     const todayNotices = notices.filter(n => n.date === today);
     document.getElementById('adminTodayNotices').textContent = todayNotices.length;
 
-    // User list
+    // User list with role indicators
     const userList = document.getElementById('userList');
     userList.innerHTML = users.map(user => `
-        <div class="admin-user-item">
+        <div class="admin-user-item ${user.role === ROLES.ADMIN ? 'admin-user' : 'student-user'}">
             <div class="user-info">
-                <strong>${user.name}</strong>
+                <strong>${user.role === ROLES.ADMIN ? '👑' : '👤'} ${user.name}</strong>
                 <div style="font-size:0.9rem;color:#666;">
-                    📧 ${user.email} | 🎓 ${user.studentId} | Role: ${user.role}
+                    📧 ${user.email} | 🎓 ${user.studentId} 
+                    <span class="role-tag ${user.role}">${user.role.toUpperCase()}</span>
                 </div>
             </div>
             <div class="user-actions">
-                ${user.role !== 'admin' ? `
-                    <button class="btn-sm btn-edit" onclick="makeAdmin('${user.id}')">Make Admin</button>
-                    <button class="btn-sm btn-delete" onclick="deleteUser('${user.id}')">Delete</button>
-                ` : '<span style="color:var(--buk-gold);font-weight:700;">👑 Admin</span>'}
+                ${user.role !== ROLES.ADMIN ? `
+                    <button class="btn-sm btn-edit" onclick="makeAdmin('${user.id}')">⬆️ Make Admin</button>
+                    <button class="btn-sm btn-delete" onclick="deleteUser('${user.id}')">🗑️ Delete</button>
+                ` : `
+                    <span style="color:var(--buk-gold);font-weight:700;">👑 Administrator</span>
+                `}
             </div>
         </div>
     `).join('');
 
-    // Notice list for admin
+    // Notice list for admin with author role
     const adminNoticeList = document.getElementById('adminNoticeList');
-    adminNoticeList.innerHTML = notices.map((notice, index) => `
+    adminNoticeList.innerHTML = notices.map((notice, index) => {
+        const isAdminNotice = notice.role === ROLES.ADMIN || notice.author === 'BUK Administrator' || notice.author === 'Admin';
+        return `
         <div class="admin-notice-item">
             <div class="notice-info">
                 <strong>${notice.title}</strong>
                 <div style="font-size:0.9rem;color:#666;">
-                    ${notice.category} | ${notice.date} | By: ${notice.author || 'Unknown'}
+                    ${notice.category} | ${notice.date} 
+                    ${isAdminNotice ? '👑 Admin' : '👤 Student'} 
+                    By: ${notice.author || 'Unknown'}
                 </div>
             </div>
             <div class="notice-actions">
-                <button class="btn-sm btn-delete" onclick="deleteNotice(${index})">Delete</button>
+                <button class="btn-sm btn-delete" onclick="deleteNotice(${index})">🗑️ Delete</button>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // ===== ADMIN FUNCTIONS =====
 function makeAdmin(userId) {
-    if (currentUser.role !== 'admin') {
+    if (currentUser.role !== ROLES.ADMIN) {
         alert('❌ Access denied.');
         return;
     }
     
     const user = users.find(u => u.id === userId);
     if (user) {
-        user.role = 'admin';
+        user.role = ROLES.ADMIN;
+        user.profile = user.profile || {};
+        user.profile.avatar = '👑';
         localStorage.setItem('bukUsers', JSON.stringify(users));
         updateAdminPanel();
         alert(`✅ ${user.name} is now a BUK Admin!`);
@@ -246,7 +334,7 @@ function makeAdmin(userId) {
 }
 
 function deleteUser(userId) {
-    if (currentUser.role !== 'admin') {
+    if (currentUser.role !== ROLES.ADMIN) {
         alert('❌ Access denied.');
         return;
     }
@@ -297,23 +385,46 @@ function displayNotices(noticesToShow = null) {
     // Sort notices by date (newest first)
     const sortedNotices = [...filteredNotices].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    noticeList.innerHTML = sortedNotices.map((notice, index) => `
-        <div class="notice-card">
-            <h3>${escapeHtml(notice.title)}</h3>
+    noticeList.innerHTML = sortedNotices.map((notice, index) => {
+        // Determine if notice is from admin
+        const isAdminNotice = notice.role === ROLES.ADMIN || 
+                            notice.author === 'BUK Administrator' || 
+                            notice.author === 'Admin' ||
+                            (notice.author && notice.author.includes('Admin'));
+        
+        const isOwnNotice = currentUser && currentUser.id === notice.userId;
+        const canDelete = currentUser && (currentUser.role === ROLES.ADMIN || isOwnNotice);
+        const canEdit = currentUser && isOwnNotice;
+        
+        return `
+        <div class="notice-card ${isAdminNotice ? 'admin-notice' : 'student-notice'}">
+            <div class="notice-header">
+                <h3>${escapeHtml(notice.title)}</h3>
+                ${isAdminNotice ? '<span class="admin-badge">👑 ADMIN</span>' : '<span class="student-badge">👤 STUDENT</span>'}
+            </div>
             <div class="meta">
                 <span class="category">${getCategoryIcon(notice.category)} ${escapeHtml(notice.category)}</span>
                 <span>📅 ${formatDate(notice.date)}</span>
                 <span>🕐 ${notice.time || 'Just now'}</span>
-                ${notice.author ? `<span class="notice-author">👤 ${escapeHtml(notice.author)}</span>` : ''}
+                <span class="notice-author">
+                    ${isAdminNotice ? '👑' : '👤'} ${escapeHtml(notice.author || 'Unknown')}
+                    ${isAdminNotice ? '<span class="admin-tag">Admin</span>' : ''}
+                </span>
             </div>
             <div class="notice-message">
                 ${escapeHtml(notice.message)}
             </div>
-            ${(currentUser && (currentUser.role === 'admin' || currentUser.id === notice.userId)) ? `
-                <button class="delete-btn" onclick="deleteNotice(${notices.indexOf(notice)})">🗑️ Delete</button>
-            ` : ''}
+            <div class="notice-actions">
+                ${canDelete ? `
+                    <button class="delete-btn" onclick="deleteNotice(${notices.indexOf(notice)})">🗑️ Delete</button>
+                ` : ''}
+                ${canEdit ? `
+                    <button class="edit-btn" onclick="editNotice(${notices.indexOf(notice)})">✏️ Edit</button>
+                ` : ''}
+                <button class="view-btn" onclick="viewNoticeDetails(${notices.indexOf(notice)})">👁️ View Details</button>
+            </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 function deleteNotice(index) {
@@ -323,7 +434,7 @@ function deleteNotice(index) {
     }
     
     const notice = notices[index];
-    if (currentUser.role !== 'admin' && currentUser.id !== notice.userId) {
+    if (currentUser.role !== ROLES.ADMIN && currentUser.id !== notice.userId) {
         alert('❌ You can only delete your own notices.');
         return;
     }
@@ -340,7 +451,7 @@ function deleteNotice(index) {
 }
 
 function clearAllNotices() {
-    if (!currentUser || currentUser.role !== 'admin') {
+    if (!currentUser || currentUser.role !== ROLES.ADMIN) {
         alert('❌ Only BUK Admins can clear all notices.');
         return;
     }
@@ -360,6 +471,55 @@ function clearAllNotices() {
         }
         alert('All BUK notices cleared successfully!');
     }
+}
+
+// ===== EDIT NOTICE (Student's Own Notices) =====
+function editNotice(index) {
+    const notice = notices[index];
+    if (!currentUser || currentUser.id !== notice.userId) {
+        alert('❌ You can only edit your own notices.');
+        return;
+    }
+    
+    const newTitle = prompt('Edit Title:', notice.title);
+    if (newTitle === null) return;
+    const newMessage = prompt('Edit Message:', notice.message);
+    if (newMessage === null) return;
+    
+    if (newTitle.trim() && newMessage.trim()) {
+        notice.title = newTitle.trim();
+        notice.message = newMessage.trim();
+        localStorage.setItem('bukNotices', JSON.stringify(notices));
+        displayNotices();
+        alert('✅ Notice updated successfully!');
+    }
+}
+
+// ===== VIEW NOTICE DETAILS =====
+function viewNoticeDetails(index) {
+    const notice = notices[index];
+    if (!notice) return;
+    
+    const isAdminNotice = notice.role === ROLES.ADMIN || 
+                         notice.author === 'BUK Administrator' || 
+                         notice.author === 'Admin';
+    
+    alert(`
+📌 NOTICE DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 Title: ${notice.title}
+📂 Category: ${notice.category}
+📅 Date: ${formatDate(notice.date)}
+🕐 Time: ${notice.time || 'Just now'}
+👤 Author: ${notice.author || 'Unknown'}
+👑 Role: ${isAdminNotice ? '👑 Administrator' : '🎓 Student'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 Message:
+${notice.message}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔖 ID: ${notice.id || 'N/A'}
+    `);
 }
 
 // ===== UTILITY FUNCTIONS =====
@@ -428,6 +588,7 @@ document.getElementById('noticeForm')?.addEventListener('submit', function(e) {
         time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         author: currentUser.name,
         userId: currentUser.id,
+        role: currentUser.role, // Store the user's role with the notice
         timestamp: new Date().toISOString()
     };
 
@@ -463,3 +624,20 @@ document.addEventListener('keydown', function(e) {
 
 // ===== START APPLICATION =====
 initApp();
+
+// ===== EXPOSE FUNCTIONS TO GLOBAL SCOPE =====
+window.loginUser = loginUser;
+window.registerUser = registerUser;
+window.logoutUser = logoutUser;
+window.switchAuth = switchAuth;
+window.toggleUserMenu = toggleUserMenu;
+window.viewProfile = viewProfile;
+window.closeProfile = closeProfile;
+window.showAdminPanel = showAdminPanel;
+window.closeAdminPanel = closeAdminPanel;
+window.makeAdmin = makeAdmin;
+window.deleteUser = deleteUser;
+window.deleteNotice = deleteNotice;
+window.clearAllNotices = clearAllNotices;
+window.editNotice = editNotice;
+window.viewNoticeDetails = viewNoticeDetails;
