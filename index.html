@@ -3,48 +3,286 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bugema University - Notice Board</title>
+    <title>Bugema University - Official Notice Board</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>📢 Bugema University Notice Board</h1>
-            <p class="subtitle">Stay informed with official announcements</p>
+    <!-- ===== AUTH MODAL ===== -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="auth-container">
+                <!-- Login Form -->
+                <div id="loginForm" class="auth-form active">
+                    <div class="auth-header">
+                        <div class="auth-logo">
+                            <div class="mini-shield">
+                                <span class="mini-blu">BLU</span>
+                            </div>
+                        </div>
+                        <h2>Welcome Back</h2>
+                        <p>Sign in to access the notice board</p>
+                    </div>
+                    <form onsubmit="loginUser(event)">
+                        <div class="form-group">
+                            <label>📧 Email</label>
+                            <input type="email" id="loginEmail" placeholder="student@bugema.ac.ug" required />
+                        </div>
+                        <div class="form-group">
+                            <label>🔒 Password</label>
+                            <input type="password" id="loginPassword" placeholder="Enter your password" required />
+                        </div>
+                        <button type="submit" class="btn-primary">Sign In</button>
+                    </form>
+                    <p class="auth-switch">
+                        Don't have an account? <span onclick="switchAuth('register')">Register here</span>
+                    </p>
+                </div>
+
+                <!-- Register Form -->
+                <div id="registerForm" class="auth-form">
+                    <div class="auth-header">
+                        <div class="auth-logo">
+                            <div class="mini-shield">
+                                <span class="mini-blu">BLU</span>
+                            </div>
+                        </div>
+                        <h2>Create Account</h2>
+                        <p>Join the Bugema community</p>
+                    </div>
+                    <form onsubmit="registerUser(event)">
+                        <div class="form-group">
+                            <label>👤 Full Name</label>
+                            <input type="text" id="regName" placeholder="John Doe" required />
+                        </div>
+                        <div class="form-group">
+                            <label>📧 Email</label>
+                            <input type="email" id="regEmail" placeholder="student@bugema.ac.ug" required />
+                        </div>
+                        <div class="form-group">
+                            <label>🎓 Student ID</label>
+                            <input type="text" id="regStudentId" placeholder="BU-2024-001" required />
+                        </div>
+                        <div class="form-group">
+                            <label>🔒 Password</label>
+                            <input type="password" id="regPassword" placeholder="Min 6 characters" required minlength="6" />
+                        </div>
+                        <div class="form-group">
+                            <label>🔒 Confirm Password</label>
+                            <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required />
+                        </div>
+                        <button type="submit" class="btn-primary">Create Account</button>
+                    </form>
+                    <p class="auth-switch">
+                        Already have an account? <span onclick="switchAuth('login')">Sign in here</span>
+                    </p>
+                </div>
+            </div>
         </div>
-    </header>
+    </div>
 
-    <main class="container">
-        <!-- Notice Form -->
-        <section id="notice-form">
-            <h2>Post a New Notice</h2>
-            <form id="noticeForm">
-                <input type="text" id="title" placeholder="Notice Title" required />
-                <textarea id="message" placeholder="Notice Details" required rows="4"></textarea>
-                <input type="date" id="date" required />
-                <select id="category">
-                    <option value="Academic">Academic</option>
-                    <option value="Administrative">Administrative</option>
-                    <option value="Events">Events</option>
-                    <option value="Announcement">Announcement</option>
-                    <option value="Other">Other</option>
-                </select>
-                <button type="submit">Post Notice</button>
-            </form>
-        </section>
+    <!-- ===== MAIN APP ===== -->
+    <div id="app" style="display: none;">
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo-container">
+                        <div class="bugema-logo">
+                            <div class="logo-shield">
+                                <div class="logo-text">
+                                    <span class="university">UNIVERSITY</span>
+                                    <span class="blu">BLU</span>
+                                    <span class="faculty">FACULTY</span>
+                                    <span class="year">1948</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="header-title">
+                            <h1>Bugema University</h1>
+                            <p class="subtitle">Official Student Notice Board</p>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <div class="user-profile" onclick="toggleUserMenu()">
+                            <div class="user-avatar" id="userAvatar">👤</div>
+                            <span class="user-name" id="userNameDisplay">User</span>
+                            <span class="user-role" id="userRoleDisplay">Student</span>
+                            <div class="dropdown-arrow">▼</div>
+                            <div class="user-menu" id="userMenu">
+                                <div class="menu-item" onclick="viewProfile()">👤 My Profile</div>
+                                <div class="menu-item" onclick="showAdminPanel()" id="adminMenuItem" style="display:none;">⚙️ Admin Panel</div>
+                                <div class="menu-item" onclick="logoutUser()">🚪 Logout</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-        <!-- Notices Display -->
-        <section id="notices">
-            <h2>Latest Notices</h2>
-            <div id="noticeList"></div>
-        </section>
-    </main>
+        <main class="container">
+            <!-- ===== ADMIN PANEL ===== -->
+            <div id="adminPanel" style="display: none;">
+                <div class="admin-header">
+                    <h2>⚙️ Admin Dashboard</h2>
+                    <button onclick="closeAdminPanel()" class="btn-danger">Close</button>
+                </div>
+                
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <span class="stat-number" id="adminTotalUsers">0</span>
+                        <span class="stat-label">Total Users</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="adminTotalNotices">0</span>
+                        <span class="stat-label">Total Notices</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="adminTodayNotices">0</span>
+                        <span class="stat-label">Today's Notices</span>
+                    </div>
+                </div>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2026 Bugema University. All rights reserved.</p>
+                <div class="admin-section">
+                    <h3>👥 User Management</h3>
+                    <div id="userList" class="admin-table"></div>
+                </div>
+
+                <div class="admin-section">
+                    <h3>📋 Notice Management</h3>
+                    <button onclick="clearAllNotices()" class="btn-danger">🗑️ Delete All Notices</button>
+                    <div id="adminNoticeList" class="admin-table"></div>
+                </div>
+            </div>
+
+            <!-- ===== STATS BAR ===== -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-number" id="noticeCount">0</span>
+                    <span class="stat-label">Total Notices</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="todayCount">0</span>
+                    <span class="stat-label">Posted Today</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="categoryCount">5</span>
+                    <span class="stat-label">Categories</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="userCount">0</span>
+                    <span class="stat-label">Active Users</span>
+                </div>
+            </div>
+
+            <!-- ===== NOTICE FORM ===== -->
+            <section id="notice-form">
+                <div class="form-header">
+                    <h2>📝 Post a New Notice</h2>
+                    <p>Share important announcements with the Bugema community</p>
+                </div>
+                <form id="noticeForm">
+                    <div class="form-group">
+                        <label for="title">Notice Title *</label>
+                        <input type="text" id="title" placeholder="e.g., Exam Schedule Released" required />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Notice Details *</label>
+                        <textarea id="message" placeholder="Provide full details of the notice..." required rows="4"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date">Date *</label>
+                            <input type="date" id="date" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category *</label>
+                            <select id="category">
+                                <option value="Academic">📚 Academic</option>
+                                <option value="Administrative">📋 Administrative</option>
+                                <option value="Events">🎉 Events</option>
+                                <option value="Announcement">📢 Announcement</option>
+                                <option value="Spiritual">🙏 Spiritual</option>
+                                <option value="Sports">⚽ Sports</option>
+                                <option value="Career">💼 Career</option>
+                                <option value="Other">📌 Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <span class="btn-icon">📤</span> Post Notice
+                    </button>
+                </form>
+            </section>
+
+            <!-- ===== NOTICES DISPLAY ===== -->
+            <section id="notices">
+                <div class="notices-header">
+                    <h2>📋 Latest Notices</h2>
+                    <div class="notice-controls">
+                        <input type="text" id="searchInput" placeholder="🔍 Search notices..." />
+                        <select id="filterCategory">
+                            <option value="all">All Categories</option>
+                            <option value="Academic">📚 Academic</option>
+                            <option value="Administrative">📋 Administrative</option>
+                            <option value="Events">🎉 Events</option>
+                            <option value="Announcement">📢 Announcement</option>
+                            <option value="Spiritual">🙏 Spiritual</option>
+                            <option value="Sports">⚽ Sports</option>
+                            <option value="Career">💼 Career</option>
+                            <option value="Other">📌 Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="noticeList"></div>
+            </section>
+        </main>
+
+        <!-- ===== PROFILE MODAL ===== -->
+        <div id="profileModal" class="modal">
+            <div class="modal-content profile-modal">
+                <div class="modal-header">
+                    <h2>👤 My Profile</h2>
+                    <button onclick="closeProfile()" class="close-btn">&times;</button>
+                </div>
+                <div class="profile-content">
+                    <div class="profile-avatar-large">👤</div>
+                    <div class="profile-info">
+                        <p><strong>Name:</strong> <span id="profileName"></span></p>
+                        <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+                        <p><strong>Student ID:</strong> <span id="profileStudentId"></span></p>
+                        <p><strong>Role:</strong> <span id="profileRole"></span></p>
+                        <p><strong>Member Since:</strong> <span id="profileJoined"></span></p>
+                    </div>
+                    <button onclick="closeProfile()" class="btn-primary">Close</button>
+                </div>
+            </div>
         </div>
-    </footer>
+
+        <footer>
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-logo">
+                        <div class="mini-logo">
+                            <span class="mini-blu">BLU</span>
+                        </div>
+                        <div>
+                            <p class="footer-uni">Bugema University</p>
+                            <p class="footer-motto">Excellence in Service Since 1948</p>
+                        </div>
+                    </div>
+                    <div class="footer-links">
+                        <a href="#" onclick="viewProfile()">My Profile</a>
+                        <a href="#" onclick="logoutUser()">Logout</a>
+                    </div>
+                    <div class="footer-copy">
+                        <p>&copy; 2026 Bugema University. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
 
     <script src="script.js"></script>
 </body>
