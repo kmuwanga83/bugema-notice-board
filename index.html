@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bugema University - Official Notice Board</title>
+    <title>BUK - Bugema University Notice Board</title>
     <link rel="stylesheet" href="style.css" />
+    <!-- Add favicon -->
+    <link rel="icon" type="image/png" href="bugema_logo.png" />
 </head>
 <body>
     <!-- ===== AUTH MODAL ===== -->
@@ -15,12 +17,12 @@
                 <div id="loginForm" class="auth-form active">
                     <div class="auth-header">
                         <div class="auth-logo">
-                            <div class="mini-shield">
-                                <span class="mini-blu">BLU</span>
+                            <div class="logo-image-container">
+                                <img src="bugema_logo.png" alt="Bugema University Logo" class="auth-logo-img" />
                             </div>
                         </div>
                         <h2>Welcome Back</h2>
-                        <p>Sign in to access the notice board</p>
+                        <p>Sign in to access the BUK notice board</p>
                     </div>
                     <form onsubmit="loginUser(event)">
                         <div class="form-group">
@@ -42,12 +44,12 @@
                 <div id="registerForm" class="auth-form">
                     <div class="auth-header">
                         <div class="auth-logo">
-                            <div class="mini-shield">
-                                <span class="mini-blu">BLU</span>
+                            <div class="logo-image-container">
+                                <img src="bugema_logo.png" alt="Bugema University Logo" class="auth-logo-img" />
                             </div>
                         </div>
                         <h2>Create Account</h2>
-                        <p>Join the Bugema community</p>
+                        <p>Join the BUK community</p>
                     </div>
                     <form onsubmit="registerUser(event)">
                         <div class="form-group">
@@ -60,7 +62,7 @@
                         </div>
                         <div class="form-group">
                             <label>🎓 Student ID</label>
-                            <input type="text" id="regStudentId" placeholder="BU-2024-001" required />
+                            <input type="text" id="regStudentId" placeholder="BUK-2024-001" required />
                         </div>
                         <div class="form-group">
                             <label>🔒 Password</label>
@@ -86,19 +88,13 @@
             <div class="container">
                 <div class="header-content">
                     <div class="logo-container">
+                        <!-- Bugema University Logo Image -->
                         <div class="bugema-logo">
-                            <div class="logo-shield">
-                                <div class="logo-text">
-                                    <span class="university">UNIVERSITY</span>
-                                    <span class="blu">BLU</span>
-                                    <span class="faculty">FACULTY</span>
-                                    <span class="year">1948</span>
-                                </div>
-                            </div>
+                            <img src="bugema_logo.png" alt="Bugema University Logo" class="header-logo-img" />
                         </div>
                         <div class="header-title">
                             <h1>Bugema University</h1>
-                            <p class="subtitle">Official Student Notice Board</p>
+                            <p class="subtitle">Official Student Notice Board <span class="buk-badge">BUK</span></p>
                         </div>
                     </div>
                     <div class="header-right">
@@ -122,7 +118,7 @@
             <!-- ===== ADMIN PANEL ===== -->
             <div id="adminPanel" style="display: none;">
                 <div class="admin-header">
-                    <h2>⚙️ Admin Dashboard</h2>
+                    <h2>⚙️ BUK Admin Dashboard</h2>
                     <button onclick="closeAdminPanel()" class="btn-danger">Close</button>
                 </div>
                 
@@ -169,7 +165,7 @@
                 </div>
                 <div class="stat-item">
                     <span class="stat-number" id="userCount">0</span>
-                    <span class="stat-label">Active Users</span>
+                    <span class="stat-label">BUK Students</span>
                 </div>
             </div>
 
@@ -177,7 +173,7 @@
             <section id="notice-form">
                 <div class="form-header">
                     <h2>📝 Post a New Notice</h2>
-                    <p>Share important announcements with the Bugema community</p>
+                    <p>Share important announcements with the BUK community</p>
                 </div>
                 <form id="noticeForm">
                     <div class="form-group">
@@ -221,7 +217,7 @@
                 <div class="notices-header">
                     <h2>📋 Latest Notices</h2>
                     <div class="notice-controls">
-                        <input type="text" id="searchInput" placeholder="🔍 Search notices..." />
+                        <input type="text" id="searchInput" placeholder="🔍 Search BUK notices..." />
                         <select id="filterCategory">
                             <option value="all">All Categories</option>
                             <option value="Academic">📚 Academic</option>
@@ -243,13 +239,15 @@
         <div id="profileModal" class="modal">
             <div class="modal-content profile-modal">
                 <div class="modal-header">
-                    <h2>👤 My Profile</h2>
+                    <h2>👤 My BUK Profile</h2>
                     <button onclick="closeProfile()" class="close-btn">&times;</button>
                 </div>
                 <div class="profile-content">
-                    <div class="profile-avatar-large">👤</div>
+                    <div class="profile-avatar-large">
+                        <img src="bugema_logo.png" alt="BUK Logo" class="profile-logo-img" />
+                    </div>
                     <div class="profile-info">
-                        <p><strong>Name:</strong> <span id="profileName"></span></p>
+                        <p><strong>Full Name:</strong> <span id="profileName"></span></p>
                         <p><strong>Email:</strong> <span id="profileEmail"></span></p>
                         <p><strong>Student ID:</strong> <span id="profileStudentId"></span></p>
                         <p><strong>Role:</strong> <span id="profileRole"></span></p>
@@ -264,9 +262,7 @@
             <div class="container">
                 <div class="footer-content">
                     <div class="footer-logo">
-                        <div class="mini-logo">
-                            <span class="mini-blu">BLU</span>
-                        </div>
+                        <img src="bugema_logo.png" alt="Bugema University Logo" class="footer-logo-img" />
                         <div>
                             <p class="footer-uni">Bugema University</p>
                             <p class="footer-motto">Excellence in Service Since 1948</p>
@@ -275,9 +271,10 @@
                     <div class="footer-links">
                         <a href="#" onclick="viewProfile()">My Profile</a>
                         <a href="#" onclick="logoutUser()">Logout</a>
+                        <a href="https://bugemauniv.ac.ug" target="_blank">Official Website</a>
                     </div>
                     <div class="footer-copy">
-                        <p>&copy; 2026 Bugema University. All rights reserved.</p>
+                        <p>&copy; 2026 BUK - Bugema University. All rights reserved.</p>
                     </div>
                 </div>
             </div>
