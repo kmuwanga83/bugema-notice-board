@@ -285,5 +285,20 @@
     </div>
 
     <script src="script.js"></script>
+        <!-- ===== SERVICE WORKER REGISTRATION ===== -->
+    <script>
+        // Register Service Worker for offline support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/bugema-notice-board/sw.js')
+            .then(function(registration) {
+                console.log('✅ Service Worker registered successfully:', registration);
+            })
+            .catch(function(error) {
+                console.log('❌ Service Worker registration failed:', error);
+            });
+        }
+    </script>
+</body>
+</html>
 </body>
 </html>
